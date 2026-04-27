@@ -1,0 +1,8 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="form-container">
+    <h1>500 - Something went wrong</h1>
+    <p>There was a server error. Try again later.</p>
+    <a href="{{ url_for('index') }}">Go home</a>
+</div>
+{% endblock %}
