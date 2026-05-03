@@ -1,6 +1,11 @@
 from flask import Flask, render_template, request, redirect, url_for, session
+from flask_sqlalchemy import SQLAlchemy
+from flask_wtf import FlaskForm
+from wtforms import StringField, PasswordField, SelectField
+from wtforms.validators import DataRequired, Email, Length
 from werkzeug.security import generate_password_hash, check_password_hash
 from dotenv import load_dotenv
+from functools import wraps
 import sqlite3
 import requests
 import os
@@ -9,15 +14,99 @@ load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///watchd.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['WTF_CSRF_ENABLED'] = True
+
+db = SQLAlchemy(app)
+
 
 TMDB_API_KEY = os.getenv('TMDB_API_KEY')
 TMDB_BASE = 'https://api.themoviedb.org/3'
 TMDB_IMG = 'https://image.tmdb.org/t/p/w500'
 
-def get_db():
-    conn = sqlite3.connect('watchd.db')
-    conn.row_factory = sqlite3.Row
-    return conn
+
+# models
+
+class User(db.Model):
+    __tablename__ = 'users'
+    user_id       = db.Column(db.Integer, primary_key=True)
+    username      = db.Column(db.String(80), unique=True, nullable=False)
+    email         = db.Column(db.String(120), unique=True, nullable=False)
+    password_hash = db.Column(db.String(200), nullable=False)
+    created_at    = db.Column(db.DateTime, server_default=db.func.now())
+
+    watched   = db.relationship('Watched', backref='user', lazy=True)
+    watchlist = db.relationship('Watchlist', backref='user', lazy=True)
+
+
+class Media(db.Model):
+    __tablename__ = 'media'
+    media_id     = db.Column(db.Integer, primary_key=True)
+    tmdb_id      = db.Column(db.String(20), nullable=False)
+    media_type   = db.Column(db.String(10), nullable=False)
+    title        = db.Column(db.String(200), nullable=False)
+    release_year = db.Column(db.Integer)
+    poster_url   = db.Column(db.String(300))
+
+    __table_args__ = (db.UniqueConstraint('tmdb_id', 'media_type'),)
+
+class Watched(db.Model):
+    __tablename__ = 'watched'
+    watched_id = db.Column(db.Integer, primary_key=True)
+    user_id    = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
+    media_id   = db.Column(db.Integer, db.ForeignKey('media.media_id'), nullable=False)
+    rating     = db.Column(db.Integer)
+    review     = db.Column(db.Text)
+    watched_on = db.Column(db.DateTime, server_default=db.func.now())
+
+    media = db.relationship('Media')
+
+    __table_args__ = (db.UniqueConstraint('user_id', 'media_id'),)
+
+
+class Watchlist(db.Model):
+    __tablename__ = 'watchlist'
+    watchlist_id = db.Column(db.Integer, primary_key=True)
+    user_id      = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
+    media_id     = db.Column(db.Integer, db.ForeignKey('media.media_id'), nullable=False)
+    added_on     = db.Column(db.DateTime, server_default=db.func.now())
+
+    media = db.relationship('Media')
+
+    __table_args__ = (db.UniqueConstraint('user_id', 'media_id'),)
+
+# forms
+
+class RegisterForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired(), Length(min=3, max=80)])
+    email    = StringField('Email',    validators=[DataRequired(), Email()])
+    password = PasswordField('Password', validators=[DataRequired(), Length(min=6)])
+
+
+class LoginForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired()])
+    password = PasswordField('Password', validators=[DataRequired()])
+
+
+class SearchForm(FlaskForm):
+    q    = StringField('Search', validators=[DataRequired()])
+    type = SelectField('Type', choices=[('movie', 'Movies'), ('tv', 'TV Shows')])
+
+# helpful stuff
+
+@app.context_processor
+def inject_globals():
+    return dict(TMDB_IMG=TMDB_IMG)
+
+
+def login_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if 'user_id' not in session:
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated
 
 # routes
 
@@ -38,49 +127,42 @@ def server_error(e):
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    error = None
-    if request.method == 'POST':
-        username = request.form['username']
-        email    = request.form['email']
-        password = request.form['password']
-        db = get_db()
-        existing = db.execute(
-            'SELECT user_id FROM users WHERE username = ? OR email = ?',
-            [username, email]
-        ).fetchone()
+    form = RegisterForm()
+    if form.validate_on_submit():
+
+        existing = User.query.filter(
+            (User.username == form.username.data) |
+            (User.email == form.email.data)
+        ).first()
         if existing:
-            error = 'Username or email already taken.'
+            form.username.errors.append('Username or email already taken.')
         else:
-            db.execute(
-                'INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)',
-                [username, email, generate_password_hash(password)]
+            user = User(
+                username      = form.username.data,
+                email         = form.email.data,
+                password_hash = generate_password_hash(form.password.data)
             )
-            db.commit()
+            db.session.add(user)
+            db.session.commit()
             return redirect(url_for('login'))
-    return render_template('register.html', error=error)
+    return render_template('register.html', form=form)
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    error = None
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        db   = get_db()
-        user = db.execute(
-            'SELECT * FROM users WHERE username = ?',
-            [username]
-        ).fetchone()
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(username=form.username.data).first()
         if user is None:
-            error = 'Username not found.'
-        elif not check_password_hash(user['password_hash'], password):
-            error = 'Incorrect password.'
+            form.username.errors.append('Username not found.')
+        elif not check_password_hash(user.password_hash, form.password.data):
+            form.password.errors.append('Incorrect password.')
         else:
             session.clear()
-            session['user_id'] = user['user_id']
-            session['username'] = user['username']
-            return redirect(url_for('index'))
-    return render_template('login.html', error=error)
+            session['user_id'] = user.user_id
+            session['username'] = user.username
+            return redirect(url_for('search'))
+    return render_template('login.html', form=form)
 
 
 @app.route('/logout')
@@ -88,7 +170,28 @@ def logout():
     session.clear()
     return redirect(url_for('login'))
 
+
+@app.route('/search', methods=['GET', 'POST'])
+@login_required
+def search():
+    results = []
+    query   = request.args.get('q', '')
+    type_   = request.args.get('type', 'movie')
+
+    if query:
+        resp    = requests.get(
+            f'{TMDB_BASE}/search/{type_}',
+            params={'api_key': TMDB_API_KEY, 'query': query, 'language': 'en-US'}
+        )
+        results = resp.json().get('results', [])
+
+    form = SearchForm(data={'q': query, 'type': type_})
+    return render_template('search.html', form=form, results=results,
+                           query=query, type=type_)
+
 # run
 
 if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
     app.run(debug=True)

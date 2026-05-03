@@ -2,15 +2,23 @@
 {% block content %}
 <div class="form-container">
     <h1>Log in</h1>
-    {% if error %}
-        <p class="error">{{ error }}</p>
-    {% endif %}
     <form method="POST">
-        <label for="username">Username</label>
-        <input type="text" id="username" name="username" required>
-        <label for="password">Password</label>
-        <input type="password" id="password" name="password" required>
-        <button type="submit">Log in</button>
+        {{ form.hidden_tag() }}
+        <div class="field">
+            {{ form.username.label }}
+            {{ form.username(class="form-input") }}
+            {% for error in form.username.errors %}
+                <p class="error">{{ error }}</p>
+            {% endfor %}
+        </div>
+        <div class="field">
+            {{ form.password.label }}
+            {{ form.password(class="form-input") }}
+            {% for error in form.password.errors %}
+                <p class="error">{{ error }}</p>
+            {% endfor %}
+        </div>
+        <button type="submit" class="btn-primary">Log in</button>
     </form>
     <p>No account? <a href="{{ url_for('register') }}">Register</a></p>
 </div>

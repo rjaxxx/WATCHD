@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="search-header">
+    <h1>Search</h1>
+
+    <form method="GET" action="{{ url_for('search') }}">
+        {{ form.hidden_tag() }}
+        <div class="search-row">
+            {{ form.q(class="search-input", placeholder="Search movies or TV shows...") }}
+            {{ form.type(class="search-select") }}
+            <button type="submit" class="btn-primary">Search</button>
+        </div>
+    </form>
+</div>
+{% if query and results|length == 0 %}
+    <p class="no-results">No results found for "{{ query }}".</p>
+{% endif %}
+{% if results %}
+<div class="results-grid">
+    {% for item in results %}
+    {% set title = item.title if type == 'movie' else item.name %}
+    {% set date  = item.release_date if type == 'movie' else item.first_air_date %}
+    {% set year  = date[:4] if date else 'Unknown' %}
+    <div class="media-card">
+        {% if item.poster_path %}
+            <img
+                src="{{ TMDB_IMG }}{{ item.poster_path }}"
+                alt="{{ title }}"
+                class="card-poster"
+            >
+        {% else %}
+            <div class="no-poster">No image</div>
+        {% endif %}
+        <div class="card-body">
+            <h3 class="card-title">{{ title }}</h3>
+            <p class="card-sub">{{ year }} · {{ 'Movie' if type == 'movie' else 'TV' }}</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

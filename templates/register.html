@@ -2,17 +2,30 @@
 {% block content %}
 <div class="form-container">
     <h1>Create account</h1>
-    {% if error %}
-        <p class="error">{{ error }}</p>
-    {% endif %}
     <form method="POST">
-        <label for="username">Username</label>
-        <input type="text" id="username" name="username" required>
-        <label for="email">Email</label>
-        <input type="email" id="email" name="email" required>
-        <label for="password">Password</label>
-        <input type="password" id="password" name="password" required>
-        <button type="submit">Register</button>
+        {{ form.hidden_tag() }}
+        <div class="field">
+            {{ form.username.label }}
+            {{ form.username(class="form-input") }}
+            {% for error in form.username.errors %}
+                <p class="error">{{ error }}</p>
+            {% endfor %}
+        </div>
+        <div class="field">
+            {{ form.email.label }}
+            {{ form.email(class="form-input") }}
+            {% for error in form.email.errors %}
+                <p class="error">{{ error }}</p>
+            {% endfor %}
+        </div>
+        <div class="field">
+            {{ form.password.label }}
+            {{ form.password(class="form-input") }}
+            {% for error in form.password.errors %}
+                <p class="error">{{ error }}</p>
+            {% endfor %}
+        </div>
+        <button type="submit" class="btn-primary">Register</button>
     </form>
     <p>Already have an account? <a href="{{ url_for('login') }}">Log in</a></p>
 </div>
