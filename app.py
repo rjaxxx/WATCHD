@@ -4,9 +4,8 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SelectField
 from wtforms.validators import DataRequired, Email, Length
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from dotenv import load_dotenv
-from functools import wraps
-import sqlite3
 import requests
 import os
 
@@ -20,6 +19,14 @@ app.config['WTF_CSRF_ENABLED'] = True
 
 db = SQLAlchemy(app)
 
+login_manager = LoginManager(app)
+login_manager.login_view = 'login' 
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return db.session.get(User, int(user_id))
+
 
 TMDB_API_KEY = os.getenv('TMDB_API_KEY')
 TMDB_BASE = 'https://api.themoviedb.org/3'
@@ -28,7 +35,7 @@ TMDB_IMG = 'https://image.tmdb.org/t/p/w500'
 
 # models
 
-class User(db.Model):
+class User(UserMixin, db.Model):
     __tablename__ = 'users'
     user_id       = db.Column(db.Integer, primary_key=True)
     username      = db.Column(db.String(80), unique=True, nullable=False)
@@ -38,6 +45,9 @@ class User(db.Model):
 
     watched   = db.relationship('Watched', backref='user', lazy=True)
     watchlist = db.relationship('Watchlist', backref='user', lazy=True)
+
+    def get_id(self):
+        return str(self.user_id)
 
 
 class Media(db.Model):
@@ -100,14 +110,6 @@ def inject_globals():
     return dict(TMDB_IMG=TMDB_IMG)
 
 
-def login_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        if 'user_id' not in session:
-            return redirect(url_for('login'))
-        return f(*args, **kwargs)
-    return decorated
-
 # routes
 
 @app.route('/')
@@ -158,16 +160,14 @@ def login():
         elif not check_password_hash(user.password_hash, form.password.data):
             form.password.errors.append('Incorrect password.')
         else:
-            session.clear()
-            session['user_id'] = user.user_id
-            session['username'] = user.username
+            login_user(user)
             return redirect(url_for('search'))
     return render_template('login.html', form=form)
 
 
 @app.route('/logout')
 def logout():
-    session.clear()
+    logout_user()
     return redirect(url_for('login'))
 
 
