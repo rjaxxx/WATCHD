@@ -185,6 +185,7 @@ def search():
         )
         results = resp.json().get('results', [])
 
+
     form = SearchForm(data={'q': query, 'type': type_})
     return render_template('search.html', form=form, results=results,
                            query=query, type=type_)
