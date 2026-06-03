@@ -105,9 +105,51 @@ class SearchForm(FlaskForm):
 
 # helpful stuff
 
+# automatically set TMDB_IMG variable to definition
 @app.context_processor
 def inject_globals():
     return dict(TMDB_IMG=TMDB_IMG)
+
+# checks if media already exists in database, otherwise will search using API
+def get_or_create_media(tmdb_id, media_type, title=None, release_year=None, poster_url=None):
+    media = Media.query.filter_by(tmdb_id=str(tmdb_id), media_type=media_type).first()
+    if media:
+        return media
+
+    # find title if not already in database
+    if title is None:
+        url = f'{TMDB_BASE}/{media_type}/{tmdb_id}'
+        params = {'api_key': TMDB_API_KEY, 'language': 'en-US'}
+        resp = requests.get(url, params=params)
+        if resp.status_code == 200:
+            data = resp.json()
+            title = data.get('title') or data.get('name')
+            date_field = data.get('release_date') or data.get('first_air_date')
+            release_year = date_field[:4] if date_field else None
+            poster_url = data.get('poster_path')
+        else:
+            title = "Unknown Title"
+
+    # define media to new values
+    media = Media(
+        tmdb_id=str(tmdb_id),
+        media_type=media_type,
+        title=title,
+        release_year=release_year,
+        poster_url=poster_url
+    )
+    db.session.add(media)
+    db.session.commit()
+    return media
+
+
+def fetch_media_details(tmdb_id, media_type):
+    url = f'{TMDB_BASE}/{media_type}/{tmdb_id}'
+    params = {'api_key': TMDB_API_KEY, 'language': 'en-US'}
+    resp = requests.get(url, params=params)
+    if resp.status_code == 200:
+        return resp.json()
+    return None
 
 
 # routes
