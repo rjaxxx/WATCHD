@@ -61,6 +61,7 @@ class Media(db.Model):
 
     __table_args__ = (db.UniqueConstraint('tmdb_id', 'media_type'),)
 
+
 class Watched(db.Model):
     __tablename__ = 'watched'
     watched_id = db.Column(db.Integer, primary_key=True)
@@ -86,6 +87,7 @@ class Watchlist(db.Model):
 
     __table_args__ = (db.UniqueConstraint('user_id', 'media_id'),)
 
+
 # forms
 
 class RegisterForm(FlaskForm):
@@ -102,6 +104,7 @@ class LoginForm(FlaskForm):
 class SearchForm(FlaskForm):
     q    = StringField('Search', validators=[DataRequired()])
     type = SelectField('Type', choices=[('movie', 'Movies'), ('tv', 'TV Shows')])
+
 
 # helpful stuff
 
@@ -203,7 +206,7 @@ def login():
             form.password.errors.append('Incorrect password.')
         else:
             login_user(user)
-            return redirect(url_for('search'))
+            return redirect(url_for('index'))
     return render_template('login.html', form=form)
 
 
@@ -231,6 +234,43 @@ def search():
     form = SearchForm(data={'q': query, 'type': type_})
     return render_template('search.html', form=form, results=results,
                            query=query, type=type_)
+
+
+# watchlist routes
+@app.route('/watchlist')
+@login_required
+def watchlist():
+    items = Watchlist.query.filter_by(user_id=current_user.user_id).all()
+    return render_template('watchlist.html', items=items)
+
+
+@app.route('/watchlist/add', methods=['POST'])
+@login_required
+def add_to_watchlist():
+    tmdb_id = request.form.get('tmdb_id')
+    media_type = request.form.get('media_type')
+    title = request.form.get('title')
+    year = request.form.get('year')
+    poster = request.form.get('poster')
+    if not tmdb_id or not media_type:
+        return redirect(url_for('search'))
+    media = get_or_create_media(tmdb_id, media_type, title, year, poster)
+    existing = Watchlist.query.filter_by(user_id=current_user.user_id, media_id=media.media_id).first()
+    if not existing:
+        watchlist_item = Watchlist(user_id=current_user.user_id, media_id=media.media_id)
+        db.session.add(watchlist_item)
+        db.session.commit()
+    return redirect(request.referrer or url_for('search'))
+
+#still need to add remove
+
+# watched routes
+@app.route('/watched')
+@login_required
+def watched():
+    items = Watched.query.filter_by(user_id=current_user.user_id).order_by(Watched.watched_on.desc()).all()
+    return render_template('watched.html', items=items)
+
 
 # run
 

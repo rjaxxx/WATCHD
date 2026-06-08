@@ -13,31 +13,117 @@
         </div>
     </form>
 </div>
+
 {% if query and results|length == 0 %}
     <p class="no-results">No results found for "{{ query }}".</p>
 {% endif %}
+
 {% if results %}
 <div class="results-grid">
     {% for item in results %}
     {% set title = item.title if type == 'movie' else item.name %}
     {% set date  = item.release_date if type == 'movie' else item.first_air_date %}
     {% set year  = date[:4] if date else 'Unknown' %}
-    <div class="media-card">
+    {% set tmdb_id = item.id %}
+    {% set poster = item.poster_path or '' %}
+    
+    <div class="media-card" data-media-id="{{ tmdb_id }}" data-media-type="{{ type }}" data-title="{{ title }}" data-year="{{ year }}" data-poster="{{ poster }}">
         {% if item.poster_path %}
-            <img
-                src="{{ TMDB_IMG }}{{ item.poster_path }}"
-                alt="{{ title }}"
-                class="card-poster"
-            >
+            <img src="{{ TMDB_IMG }}{{ item.poster_path }}" alt="{{ title }}" class="card-poster">
         {% else %}
             <div class="no-poster">No image</div>
         {% endif %}
+        
         <div class="card-body">
             <h3 class="card-title">{{ title }}</h3>
             <p class="card-sub">{{ year }} · {{ 'Movie' if type == 'movie' else 'TV' }}</p>
+            <div class="card-actions">
+                <form method="POST" action="{{ url_for('add_to_watchlist') }}" class="inline-form watchlist-form" data-title="{{ title }}">
+                    <input type="hidden" name="tmdb_id" value="{{ tmdb_id }}">
+                    <input type="hidden" name="media_type" value="{{ type }}">
+                    <input type="hidden" name="title" value="{{ title }}">
+                    <input type="hidden" name="year" value="{{ year }}">
+                    <input type="hidden" name="poster" value="{{ poster }}">
+                    <button type="submit" class="btn-small btn-watchlist">
+                        <i class="fa-regular fa-bookmark" aria-hidden="true"></i>
+                        <span>Watchlist</span>
+                    </button>
+                </form>
+                
+                <button class="btn-small btn-rate" onclick="openRatingModal('{{ tmdb_id }}', '{{ type }}', '{{ title|replace("'", "\\'") }}', '{{ year }}', '{{ poster }}')">
+                    <i class="fa-regular fa-star" aria-hidden="true"></i>
+                    <span>Rate</span>
+                </button>
+            </div>
         </div>
     </div>
     {% endfor %}
 </div>
 {% endif %}
+<div id="ratingModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeRatingModal()">x</span>
+        <h3>Rate & Add to Watched</h3>
+        <form method="POST" action="{{ url_for('add_to_watchlist') }}" id="ratingForm">
+            <input type="hidden" name="tmdb_id" id="modalTmdbId">
+            <input type="hidden" name="media_type" id="modalMediaType">
+            <input type="hidden" name="title" id="modalTitle">
+            <input type="hidden" name="year" id="modalYear">
+            <input type="hidden" name="poster" id="modalPoster">
+            
+            <label for="rating">Rating (1-10):</label>
+            <select name="rating" id="rating" class="rating-select">
+                <option value="">Not rated</option>
+                <option value="10">10 - Masterpiece</option>
+                <option value="9">9 - Amazing</option>
+                <option value="8">8 - Great</option>
+                <option value="7">7 - Good</option>
+                <option value="6">6 - Fair</option>
+                <option value="5">5 - Average</option>
+                <option value="4">4 - Below average</option>
+                <option value="3">3 - Bad</option>
+                <option value="2">2 - Terrible</option>
+                <option value="1">1 - Worst ever</option>
+            </select>
+            
+            <label for="review">Review (optional):</label>
+            <textarea name="review" id="review" rows="3" placeholder="What did you think?"></textarea>
+            
+            <button type="submit" class="btn-primary">Save to Watched</button>
+        </form>
+    </div>
+</div>
+
+<script>
+
+function openRatingModal(tmdbId, mediaType, title, year, poster) {
+    document.getElementById('modalTmdbId').value = tmdbId;
+    document.getElementById('modalMediaType').value = mediaType;
+    document.getElementById('modalTitle').value = title;
+    document.getElementById('modalYear').value = year;
+    document.getElementById('modalPoster').value = poster;
+    document.getElementById('rating').value = '';
+    document.getElementById('review').value = '';
+    document.getElementById('ratingModal').style.display = 'block';
+}
+
+function closeRatingModal() {
+    document.getElementById('ratingModal').style.display = 'none';
+}
+
+window.onclick = function(event) {
+    const modal = document.getElementById('ratingModal');
+    if (event.target === modal) {
+        closeRatingModal();
+    }
+}
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeRatingModal();
+    }
+});
+
+
+</script>
 {% endblock %}

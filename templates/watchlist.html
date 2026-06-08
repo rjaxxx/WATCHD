@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}My Watchlist - Watchd{% endblock %}
+{% block content %}
+<h1>My Watchlist</h1>
+
+{% if items %}
+    <div class="results-grid">
+        {% for item in items %}
+            {% set media = item.media %}
+            <div class="media-card">
+                {% if media.poster_url %}
+                    <img src="{{ TMDB_IMG }}{{ media.poster_url }}" alt="{{ media.title }}" class="card-poster">
+                {% else %}
+                    <div class="no-poster">No image</div>
+                {% endif %}
+                <div class="card-body">
+                    <h3 class="card-title">{{ media.title }}</h3>
+                    <p class="card-sub">{{ media.release_year or 'Unknown' }} · {{ 'Movie' if media.media_type == 'movie' else 'TV' }}</p>
+                    <div class="card-actions">
+                            <input type="hidden" name="media_id" value="{{ media.media_id }}">
+                            <select name="rating" class="small-select">
+                                <option value="">Rate</option>
+                                {% for i in range(1,11) %}
+                                    <option value="{{ i }}">{{ i }}/10</option>
+                                {% endfor %}
+                            </select>
+                            <input type="text" name="review" placeholder="Review" class="small-input">
+                            <button type="submit" class="btn-small">✓ Watched</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <p class="empty-message">Your watchlist is empty. <a href="{{ url_for('search') }}">Search for movies or TV shows</a> to add them.</p>
+{% endif %}
+{% endblock %}
