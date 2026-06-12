@@ -159,7 +159,20 @@ def fetch_media_details(tmdb_id, media_type):
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    trending = []
+    try:
+        resp = requests.get(
+            f'{TMDB_BASE}/trending/all/day',
+            params={'api_key': TMDB_API_KEY, 'language': 'en-US'},
+            timeout=5
+        )
+        if resp.status_code == 200:
+            trending = resp.json().get('results', [])
+    except Exception as e:
+        print(f"Error fetching trending: {e}")
+        trending = []
+    return render_template('index.html', trending=trending)
+
 
 
 @app.errorhandler(404)
@@ -191,7 +204,8 @@ def register():
             )
             db.session.add(user)
             db.session.commit()
-            return redirect(url_for('login'))
+            login_user(user)
+            return redirect(url_for('index'))
     return render_template('register.html', form=form)
 
 

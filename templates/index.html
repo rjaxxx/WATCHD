@@ -1,8 +1,24 @@
 {% extends 'base.html' %}
-{% block title %}Home - Watchd{% endblock %}
+{% block title %}Watchd - Home{% endblock %}
 {% block content %}
-<body>
-    <h1>Watchd</h1>
-    <p>It works!</p>
-</body>
+<h1 style="margin-bottom: 30px">Welcome to Watchd</h1>
+{% if trending %}
+    <h2>Trending Today</h2>
+    <div class="results-grid">
+        {% for item in trending[:30] %}
+        <div class="media-card">
+            {% if item.poster_path %}
+                <img src="{{ TMDB_IMG }}{{ item.poster_path }}" alt="{{ item.title or item.name }}" class="card-poster">
+            {% else %}
+                <div class="no-poster">No image</div>
+            {% endif %}
+            <div class="card-body">
+                <h3 class="card-title">{{ item.title or item.name }}</h3>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <p>Unable to load trending content. Try searching instead!</p>
+{% endif %}
 {% endblock %}
