@@ -27,7 +27,7 @@
     {% set tmdb_id = item.id %}
     {% set poster = item.poster_path or '' %}
     
-    <div class="media-card" data-media-id="{{ tmdb_id }}" data-media-type="{{ type }}" data-title="{{ title }}" data-year="{{ year }}" data-poster="{{ poster }}">
+    <div class="media-card">
         {% if item.poster_path %}
             <img src="{{ TMDB_IMG }}{{ item.poster_path }}" alt="{{ title }}" class="card-poster">
         {% else %}
@@ -37,30 +37,36 @@
         <div class="card-body">
             <h3 class="card-title">{{ title }}</h3>
             <p class="card-sub">{{ year }} · {{ 'Movie' if type == 'movie' else 'TV' }}</p>
+            
             <div class="card-actions">
-                <form method="POST" action="{{ url_for('add_to_watchlist') }}" class="inline-form watchlist-form" data-title="{{ title }}">
+                <!-- Watchlist button -->
+                <form method="POST" action="{{ url_for('add_to_watchlist') }}" class="inline-form">
                     <input type="hidden" name="tmdb_id" value="{{ tmdb_id }}">
                     <input type="hidden" name="media_type" value="{{ type }}">
                     <input type="hidden" name="title" value="{{ title }}">
                     <input type="hidden" name="year" value="{{ year }}">
                     <input type="hidden" name="poster" value="{{ poster }}">
-                    <button type="submit" class="btn-small btn-watchlist">
+                    <button type="submit" class="btn-small">
                         <i class="fa-regular fa-bookmark" aria-hidden="true"></i>
-                        <span>Watchlist</span>
+                        Watchlist
                     </button>
                 </form>
-
+                <button class="btn-small btn-rate" data-tmdb-id="{{ tmdb_id }}" data-media-type="{{ type }}" data-title="{{ title }}" data-year="{{ year }}" data-poster="{{ poster }}" onclick="openRatingModal(this)">
+                    <i class="fa-regular fa-star" aria-hidden="true"></i>
+                    Rate
+                </button>
             </div>
         </div>
     </div>
     {% endfor %}
 </div>
 {% endif %}
+
 <div id="ratingModal" class="modal">
     <div class="modal-content">
         <span class="close" onclick="closeRatingModal()">x</span>
         <h3>Rate & Add to Watched</h3>
-        <form method="POST" action="{{ url_for('add_to_watchlist') }}" id="ratingForm">
+        <form method="POST" action="{{ url_for('add_to_watched') }}" id="ratingForm">
             <input type="hidden" name="tmdb_id" id="modalTmdbId">
             <input type="hidden" name="media_type" id="modalMediaType">
             <input type="hidden" name="title" id="modalTitle">
@@ -91,8 +97,13 @@
 </div>
 
 <script>
+function openRatingModal(button) {
+    const tmdbId = button.dataset.tmdbId;
+    const mediaType = button.dataset.mediaType;
+    const title = button.dataset.title;
+    const year = button.dataset.year;
+    const poster = button.dataset.poster;
 
-function openRatingModal(tmdbId, mediaType, title, year, poster) {
     document.getElementById('modalTmdbId').value = tmdbId;
     document.getElementById('modalMediaType').value = mediaType;
     document.getElementById('modalTitle').value = title;
@@ -119,7 +130,5 @@ document.addEventListener('keydown', function(e) {
         closeRatingModal();
     }
 });
-
-
 </script>
 {% endblock %}

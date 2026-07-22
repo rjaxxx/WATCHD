@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% block title %}Watched - Watchd{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1>Watched</h1>
+    <p class="page-sub">Movies and TV shows you've watched</p>
+</div>
+{% if items %}
+    <div class="results-grid">
+        {% for item in items %}
+            {% set media = item.media %}
+            <div class="media-card watched-card">
+                {% if media.poster_url %}
+                    <img src="{{ TMDB_IMG }}{{ media.poster_url }}" alt="{{ media.title }}" class="card-poster">
+                {% else %}
+                    <div class="no-poster">No image</div>
+                {% endif %}
+                <div class="card-body">
+                    <h3 class="card-title">{{ media.title }}</h3>
+                    <p class="card-sub">{{ media.release_year or 'Unknown' }} · {{ 'Movie' if media.media_type == 'movie' else 'TV' }}</p>
+                    
+                    {% if item.rating %}
+                        <div class="rating-display">
+                            <span class="rating-number">{{ item.rating }}/10</span>
+                        </div>
+                    {% endif %}
+                    {% if item.review %}
+                        <p class="review-text">"{{ item.review }}"</p>
+                    {% endif %}
+                    
+                    <div class="card-actions">
+                        <button class="btn-small" onclick="openEditModal('{{ item.watched_id }}', '{{ item.rating or '' }}', '{{ item.review or ''|replace("'", "\\'") }}')">
+                            <i class="fa-regular fa-pen-to-square" aria-hidden="true"></i>
+                            Edit
+                        </button>
+                        <form method="POST" action="{{ url_for('remove_from_watched') }}" class="inline-form" onsubmit="return confirm('Remove this from your watched list?')">
+                            <input type="hidden" name="watched_id" value="{{ item.watched_id }}">
+                            <button type="submit" class="btn-small btn-danger">
+                                <i class="fa-regular fa-trash-can" aria-hidden="true"></i>
+                                Delete
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="empty-state">
+        <h2>Nothing watched yet</h2>
+        <p>Search for movies or TV shows to start tracking.</p>
+        <a href="{{ url_for('search') }}" class="btn-primary">Search</a>
+    </div>
+{% endif %}
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeEditModal()">×</span>
+        <h3>Edit Rating & Review</h3>
+        <form method="POST" action="{{ url_for('update_watched') }}">
+            <input type="hidden" name="watched_id" id="editWatchedId">
+            
+            <label for="editRating">Rating (1-10):</label>
+            <select name="rating" id="editRating" class="rating-select">
+                <option value="">Not rated</option>
+                <option value="10">10 - Masterpiece</option>
+                <option value="9">9 - Amazing</option>
+                <option value="8">8 - Great</option>
+                <option value="7">7 - Good</option>
+                <option value="6">6 - Fair</option>
+                <option value="5">5 - Average</option>
+                <option value="4">4 - Below average</option>
+                <option value="3">3 - Bad</option>
+                <option value="2">2 - Terrible</option>
+                <option value="1">1 - Worst ever</option>
+            </select>
+            <label for="editReview">Review (optional):</label>
+            <textarea name="review" id="editReview" rows="3" placeholder="What did you think?"></textarea>
+            <button type="submit" class="btn-primary">Update</button>
+        </form>
+    </div>
+</div>
+<script>
+function openEditModal(watchedId, rating, review) {
+    document.getElementById('editWatchedId').value = watchedId;
+    document.getElementById('editRating').value = rating || '';
+    document.getElementById('editReview').value = review || '';
+    document.getElementById('editModal').style.display = 'block';
+}
+function closeEditModal() {
+    document.getElementById('editModal').style.display = 'none';
+}
+window.onclick = function(event) {
+    const modal = document.getElementById('editModal');
+    if (event.target === modal) closeEditModal();
+}
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeEditModal();
+});
+</script>
+{% endblock %}

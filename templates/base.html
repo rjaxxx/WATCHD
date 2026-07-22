@@ -49,6 +49,9 @@
         <a href="{{ url_for('watchlist') }}" class="nav-icon" title="Watchlist" aria-label="Watchlist">
             <i class="fa-solid fa-bookmark" aria-hidden="true"></i>
         </a>
+        <a href="{{ url_for('watched') }}" class="nav-icon" title="Watched" aria-label="Watched">
+            <i class="fa-solid fa-tv" aria-hidden="true"></i>
+        </a>
 
     {% endif %}
 </div>
@@ -63,8 +66,12 @@
                     <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>
                 </a>
             {% else %}
-                <a href="{{ url_for('login') }}">Log in</a>
-                <a href="{{ url_for('register') }}">Register</a>
+                <a href="{{ url_for('login') }}" class="nav-icon" title="Login" aria-label="Login">
+                    <i class="fa-solid fa-user-check" aria-hidden="true"></i>
+                </a>
+                <a href="{{ url_for('register') }}" class="nav-icon" title="Register" aria-label="Register">
+                    <i class="fa-solid fa-user-pen" aria-hidden="true"></i>
+                </a>
             {% endif %}
         </div>
     </nav>

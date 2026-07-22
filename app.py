@@ -260,7 +260,7 @@ def watchlist():
 
 @app.route('/watchlist/add', methods=['POST'])
 @login_required
-def add_to_watchlist():
+def add_to_watchlist(): 
     tmdb_id = request.form.get('tmdb_id')
     media_type = request.form.get('media_type')
     title = request.form.get('title')
@@ -276,7 +276,16 @@ def add_to_watchlist():
         db.session.commit()
     return redirect(request.referrer or url_for('search'))
 
-#still need to add remove
+
+@app.route('/watchlist/remove', methods=['POST'])
+@login_required
+def remove_from_watchlist():
+    watchlist_id = request.form.get('watchlist_id')
+    if watchlist_id:
+        Watchlist.query.filter_by(watchlist_id=watchlist_id, user_id=current_user.user_id).delete()
+        db.session.commit()
+    return redirect(url_for('watchlist'))
+
 
 # watched routes
 @app.route('/watched')
@@ -284,6 +293,63 @@ def add_to_watchlist():
 def watched():
     items = Watched.query.filter_by(user_id=current_user.user_id).order_by(Watched.watched_on.desc()).all()
     return render_template('watched.html', items=items)
+
+
+@app.route('/watched/add', methods=['POST'])
+@login_required
+def add_to_watched(): 
+    tmdb_id = request.form.get('tmdb_id')
+    media_type = request.form.get('media_type')
+    title = request.form.get('title')
+    year = request.form.get('year')
+    poster = request.form.get('poster')
+    rating = request.form.get('rating', type=int)
+    review = request.form.get('review')
+
+    if not tmdb_id or not media_type:
+        return redirect(url_for('search'))
+    media = get_or_create_media(tmdb_id, media_type, title, year, poster)
+    Watchlist.query.filter_by(user_id=current_user.user_id, media_id=media.media_id).delete()
+    existing = Watched.query.filter_by(user_id=current_user.user_id, media_id=media.media_id).first()
+    if not existing:
+        watched_item = Watched(
+            user_id=current_user.user_id,
+            media_id=media.media_id,
+            rating=rating,
+            review=review
+        )
+        db.session.add(watched_item)
+    else:
+        existing.rating = rating
+        existing.review = review
+    db.session.commit()
+    return redirect(request.referrer or url_for('watched'))
+
+
+@app.route('/watched/update', methods=['POST'])
+@login_required
+def update_watched():
+    watched_id = request.form.get('watched_id')
+    rating = request.form.get('rating', type=int)
+    review = request.form.get('review')
+    
+    if watched_id:
+        item = Watched.query.filter_by(watched_id=watched_id, user_id=current_user.user_id).first()
+        if item:
+            item.rating = rating
+            item.review = review
+            db.session.commit()
+    return redirect(url_for('watched'))
+
+
+@app.route('/watched/remove', methods=['POST'])
+@login_required
+def remove_from_watched():
+    watched_id = request.form.get('watched_id')
+    if watched_id:
+        Watched.query.filter_by(watched_id=watched_id, user_id=current_user.user_id).delete()
+        db.session.commit()
+    return redirect(url_for('watched'))
 
 
 # run
