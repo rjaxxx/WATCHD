@@ -348,7 +348,7 @@ main {
 
 .results-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* was 150px */
     gap: 16px;
     margin-top: 24px;
 }
@@ -405,26 +405,29 @@ main {
 
 /* card actions */
 .card-actions {
-    display: flex;
-    gap: 8px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
     margin-top: 10px;
 }
 
 .btn-small {
-    flex: 1;
-    padding: 6px 10px;
-    font-size: 12px;
+    width: 100%;
+    padding: 6px 4px;
+    font-size: 11px;
+    white-space: nowrap;
     border: none;
-    border-radius: 6px;
+    border-radius: 4px;
     cursor: pointer;
     transition: all 0.2s;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 4px;
     background: var(--bg-input);
     color: var(--text-secondary);
     border: 1px solid var(--border);
+    text-align: center;
 }
 
 .btn-small:hover {
@@ -544,8 +547,8 @@ main {
 }
 
 .inline-form {
-    display: inline;
-    flex: 1;
+    display: block;
+    width: 100%;
 }
 
 .page-header {
@@ -571,4 +574,26 @@ main {
 .btn-danger:hover {
     opacity: 0.8;
     background: var(--red);
+}
+
+
+/* for mobile */
+@media (max-width: 480px) {
+    .results-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 10px;
+    }
+    
+    .btn-small {
+        font-size: 10px;
+        padding: 4px 6px;
+    }
+    
+    .btn-small i {
+        font-size: 9px;
+    }
+    
+    .card-actions {
+        gap: 4px;
+    }
 }

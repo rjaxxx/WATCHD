@@ -1,7 +1,10 @@
 {% extends 'base.html' %}
 {% block title %}My Watchlist - Watchd{% endblock %}
 {% block content %}
-<h1>My Watchlist</h1>
+<div class="page-header">
+    <h1>Watchlist</h1>
+    <p class="page-sub">Movies and TV shows you want to watch</p>
+</div>
 
 {% if items %}
     <div class="results-grid">
@@ -13,19 +16,25 @@
                 {% else %}
                     <div class="no-poster">No image</div>
                 {% endif %}
+                
                 <div class="card-body">
                     <h3 class="card-title">{{ media.title }}</h3>
                     <p class="card-sub">{{ media.release_year or 'Unknown' }} · {{ 'Movie' if media.media_type == 'movie' else 'TV' }}</p>
+                    
                     <div class="card-actions">
-                            <input type="hidden" name="media_id" value="{{ media.media_id }}">
-                            <select name="rating" class="small-select">
-                                <option value="">Rate</option>
-                                {% for i in range(1,11) %}
-                                    <option value="{{ i }}">{{ i }}/10</option>
-                                {% endfor %}
-                            </select>
-                            <input type="text" name="review" placeholder="Review" class="small-input">
-                            <button type="submit" class="btn-small">✓ Watched</button>
+                        <!-- Move to Watched button (opens modal) -->
+                        <button class="btn-small btn-rate" onclick="openRatingModal('{{ media.tmdb_id }}', '{{ media.media_type }}', '{{ media.title|replace("'", "\\'") }}', '{{ media.release_year or '' }}', '{{ media.poster_url or '' }}')">
+                            <i class="fa-regular fa-circle-check" aria-hidden="true"></i>
+                            Watched
+                        </button>
+                        
+                        <!-- Remove from watchlist -->
+                        <form method="POST" action="{{ url_for('remove_from_watchlist') }}" class="inline-form" onsubmit="return confirm('Remove this from your watchlist?')">
+                            <input type="hidden" name="watchlist_id" value="{{ item.watchlist_id }}">
+                            <button type="submit" class="btn-small btn-danger">
+                                <i class="fa-regular fa-trash-can" aria-hidden="true"></i>
+                                Remove
+                            </button>
                         </form>
                     </div>
                 </div>
@@ -33,6 +42,71 @@
         {% endfor %}
     </div>
 {% else %}
-    <p class="empty-message">Your watchlist is empty. <a href="{{ url_for('search') }}">Search for movies or TV shows</a> to add them.</p>
+    <div class="empty-state">
+        <h2>Your watchlist is empty</h2>
+        <p>Search for movies or TV shows to add them to your watchlist.</p>
+        <a href="{{ url_for('search') }}" class="btn-primary">Search</a>
+    </div>
 {% endif %}
+
+<!-- Rating Modal (reused from search page) -->
+<div id="ratingModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeRatingModal()">×</span>
+        <h3>Rate & Add to Watched</h3>
+        <form method="POST" action="{{ url_for('add_to_watched') }}" id="ratingForm">
+            <input type="hidden" name="tmdb_id" id="modalTmdbId">
+            <input type="hidden" name="media_type" id="modalMediaType">
+            <input type="hidden" name="title" id="modalTitle">
+            <input type="hidden" name="year" id="modalYear">
+            <input type="hidden" name="poster" id="modalPoster">
+            
+            <label for="rating">Rating (1-10):</label>
+            <select name="rating" id="rating" class="rating-select">
+                <option value="">Not rated</option>
+                <option value="10">10 - Masterpiece</option>
+                <option value="9">9 - Amazing</option>
+                <option value="8">8 - Great</option>
+                <option value="7">7 - Good</option>
+                <option value="6">6 - Fair</option>
+                <option value="5">5 - Average</option>
+                <option value="4">4 - Below average</option>
+                <option value="3">3 - Bad</option>
+                <option value="2">2 - Terrible</option>
+                <option value="1">1 - Worst ever</option>
+            </select>
+            
+            <label for="review">Review (optional):</label>
+            <textarea name="review" id="review" rows="3" placeholder="What did you think?"></textarea>
+            
+            <button type="submit" class="btn-primary">Save to Watched</button>
+        </form>
+    </div>
+</div>
+
+<script>
+function openRatingModal(tmdbId, mediaType, title, year, poster) {
+    document.getElementById('modalTmdbId').value = tmdbId;
+    document.getElementById('modalMediaType').value = mediaType;
+    document.getElementById('modalTitle').value = title;
+    document.getElementById('modalYear').value = year;
+    document.getElementById('modalPoster').value = poster;
+    document.getElementById('rating').value = '';
+    document.getElementById('review').value = '';
+    document.getElementById('ratingModal').style.display = 'block';
+}
+
+function closeRatingModal() {
+    document.getElementById('ratingModal').style.display = 'none';
+}
+
+window.onclick = function(event) {
+    const modal = document.getElementById('ratingModal');
+    if (event.target === modal) closeRatingModal();
+}
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeRatingModal();
+});
+</script>
 {% endblock %}
