@@ -274,7 +274,7 @@ def add_to_watchlist():
         watchlist_item = Watchlist(user_id=current_user.user_id, media_id=media.media_id)
         db.session.add(watchlist_item)
         db.session.commit()
-    return redirect(request.referrer or url_for('search'))
+    return redirect(request.referrer or url_for('index'))
 
 
 @app.route('/watchlist/remove', methods=['POST'])
@@ -323,7 +323,7 @@ def add_to_watched():
         existing.rating = rating
         existing.review = review
     db.session.commit()
-    return redirect(request.referrer or url_for('watched'))
+    return redirect(request.referrer or url_for('index'))
 
 
 @app.route('/watched/update', methods=['POST'])
