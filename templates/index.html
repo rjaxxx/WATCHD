@@ -2,56 +2,72 @@
 {% block title %}Watchd - Home{% endblock %}
 {% block content %}
 <h1 style="margin-bottom: 30px">Welcome to Watchd</h1>
-{% if trending %}
 
+{% if trending %}
     <h2>Trending Today</h2>
     <div class="results-grid">
         {% for item in trending[:30] %}
-        {% set title = item.title or item.name %}
-        {% set date = item.release_date or item.first_air_date %}
-        {% set year = date[:4] if date else 'Unknown' %}
-        {% set tmdb_id = item.id %}
-        {% set poster = item.poster_path or '' %}
-        {% set type = item.media_type or ('movie' if item.title else 'tv') %}
-        
-        <div class="media-card">
-            {% if item.poster_path %}
-                <img src="{{ TMDB_IMG }}{{ item.poster_path }}" alt="{{ title }}" class="card-poster">
-        {% else %}
-            <div class="no-poster">No image</div>
-        {% endif %}
-        
-        <div class="card-body">
-            <h3 class="card-title">{{ title }}</h3>
-            <p class="card-sub">{{ year }} · {{ 'Movie' if type == 'movie' else 'TV' }}</p>
+            {% set title = item.title or item.name %}
+            {% set date = item.release_date or item.first_air_date %}
+            {% set year = date[:4] if date else 'Unknown' %}
+            {% set tmdb_id = item.id %}
+            {% set poster = item.poster_path or '' %}
+            {% set type = item.media_type or ('movie' if item.title else 'tv') %}
             
-            <div class="card-actions">
-                <!-- Watchlist button -->
-                <form method="POST" action="{{ url_for('add_to_watchlist') }}" class="inline-form">
-                    <input type="hidden" name="tmdb_id" value="{{ tmdb_id }}">
-                    <input type="hidden" name="media_type" value="{{ type }}">
-                    <input type="hidden" name="title" value="{{ title }}">
-                    <input type="hidden" name="year" value="{{ year }}">
-                    <input type="hidden" name="poster" value="{{ poster }}">
-                    <button type="submit" class="btn-small">
-                        <i class="fa-regular fa-bookmark" aria-hidden="true"></i>
-                        Watchlist
-                    </button>
-                </form>
-                <button class="btn-small btn-rate" data-tmdb-id="{{ tmdb_id }}" data-media-type="{{ type }}" data-title="{{ title }}" data-year="{{ year }}" data-poster="{{ poster }}" onclick="openRatingModal(this)">
-                    <i class="fa-regular fa-star" aria-hidden="true"></i>
-                    Rate
-                </button>
+            <div class="media-card">
+                {% if item.poster_path %}
+                    <img src="{{ TMDB_IMG }}{{ item.poster_path }}" alt="{{ title }}" class="card-poster">
+                {% else %}
+                    <div class="no-poster">No image</div>
+                {% endif %}
+                
+                <div class="card-body">
+                    <h3 class="card-title">{{ title }}</h3>
+                    <p class="card-sub">{{ year }} · {{ 'Movie' if type == 'movie' else 'TV' }}</p>
+                    
+                    <div class="card-actions">
+                        {% if item.in_watchlist %}
+                            <form method="POST" action="{{ url_for('remove_from_watchlist_by_media') }}" class="inline-form">
+                                <input type="hidden" name="tmdb_id" value="{{ item.id }}">
+                                <input type="hidden" name="media_type" value="{{ type }}">
+                                <button type="submit" class="btn-small" style="background: var(--green); color: white; border-color: var(--green);">
+                                    <i class="fa-solid fa-check" aria-hidden="true"></i> Added
+                                </button>
+                            </form>
+                        {% else %}
+                            <form method="POST" action="{{ url_for('add_to_watchlist') }}" class="inline-form">
+                                <input type="hidden" name="tmdb_id" value="{{ item.id }}">
+                                <input type="hidden" name="media_type" value="{{ type }}">
+                                <input type="hidden" name="title" value="{{ title }}">
+                                <input type="hidden" name="year" value="{{ year }}">
+                                <input type="hidden" name="poster" value="{{ poster }}">
+                                <button type="submit" class="btn-small">
+                                    <i class="fa-regular fa-bookmark" aria-hidden="true"></i> Watchlist
+                                </button>
+                            </form>
+                        {% endif %}
+                        
+                        <!-- Rate button -->
+                        {% if item.in_watched %}
+                            <button class="btn-small" disabled style="background: var(--green); color: white; border-color: var(--green);">
+                                <i class="fa-solid fa-check" aria-hidden="true"></i> Rated
+                            </button>
+                        {% else %}
+                            <button class="btn-small btn-rate" data-tmdb-id="{{ item.id }}" data-media-type="{{ type }}" data-title="{{ title }}" data-year="{{ year }}" data-poster="{{ poster }}" onclick="openRatingModal(this)">
+                                <i class="fa-regular fa-star" aria-hidden="true"></i> Rate
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
-        </div>
+        {% endfor %}
     </div>
-    {% endfor %}
-</div>
 {% endif %}
 
+<!-- Rating Modal -->
 <div id="ratingModal" class="modal">
     <div class="modal-content">
-        <span class="close" onclick="closeRatingModal()">x</span>
+        <span class="close" onclick="closeRatingModal()">×</span>
         <h3>Rate & Add to Watched</h3>
         <form method="POST" action="{{ url_for('add_to_watched') }}" id="ratingForm">
             <input type="hidden" name="tmdb_id" id="modalTmdbId">

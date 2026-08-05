@@ -168,6 +168,8 @@ def index():
         )
         if resp.status_code == 200:
             trending = resp.json().get('results', [])
+            if current_user.is_authenticated:
+                trending = add_status_to_items(trending, current_user.user_id)
     except Exception as e:
         print(f"Error fetching trending: {e}")
         trending = []
@@ -238,12 +240,12 @@ def search():
     type_   = request.args.get('type', 'movie')
 
     if query:
-        resp    = requests.get(
+        resp = requests.get(
             f'{TMDB_BASE}/search/{type_}',
             params={'api_key': TMDB_API_KEY, 'query': query, 'language': 'en-US'}
         )
         results = resp.json().get('results', [])
-
+        results = add_status_to_items(results, current_user.user_id)
 
     form = SearchForm(data={'q': query, 'type': type_})
     return render_template('search.html', form=form, results=results,
@@ -285,6 +287,23 @@ def remove_from_watchlist():
         Watchlist.query.filter_by(watchlist_id=watchlist_id, user_id=current_user.user_id).delete()
         db.session.commit()
     return redirect(url_for('watchlist'))
+
+
+@app.route('/watchlist/remove_by_media', methods=['POST'])
+@login_required
+def remove_from_watchlist_by_media():
+    tmdb_id = request.form.get('tmdb_id')
+    media_type = request.form.get('media_type')
+    
+    if not tmdb_id or not media_type:
+        return redirect(request.referrer or url_for('watchlist'))
+    
+    media = Media.query.filter_by(tmdb_id=str(tmdb_id), media_type=media_type).first()
+    if media:
+        Watchlist.query.filter_by(user_id=current_user.user_id, media_id=media.media_id).delete()
+        db.session.commit()
+    
+    return redirect(request.referrer or url_for('watchlist'))
 
 
 # watched routes
@@ -350,6 +369,39 @@ def remove_from_watched():
         Watched.query.filter_by(watched_id=watched_id, user_id=current_user.user_id).delete()
         db.session.commit()
     return redirect(url_for('watched'))
+
+
+def add_status_to_items(items, user_id):
+    for item in items:
+        media_type = item.get('media_type')
+        if not media_type:
+            if 'title' in item:
+                media_type = 'movie'
+            elif 'name' in item:
+                media_type = 'tv'
+            else:
+                item['in_watchlist'] = False
+                item['in_watched'] = False
+                continue
+        media = Media.query.filter_by(
+            tmdb_id=str(item['id']),
+            media_type=media_type
+        ).first()
+        if media:
+            in_watchlist = Watchlist.query.filter_by(
+                user_id=user_id,
+                media_id=media.media_id
+            ).first() is not None
+            in_watched = Watched.query.filter_by(
+                user_id=user_id,
+                media_id=media.media_id
+            ).first() is not None
+        else:
+            in_watchlist = False
+            in_watched = False
+        item['in_watchlist'] = in_watchlist
+        item['in_watched'] = in_watched
+    return items
 
 
 # run

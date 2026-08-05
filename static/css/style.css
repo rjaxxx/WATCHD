@@ -258,6 +258,12 @@ main {
     margin-top: 16px;
 }
 
+.btn-small:disabled {
+    opacity: 0.8;
+    cursor: default;
+    pointer-events: none;
+}
+
 /* ── navbar quick search ─────────────────── */
 .nav-search {
     position: relative;
