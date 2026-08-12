@@ -28,14 +28,18 @@
         {% set poster = item.poster_path or '' %}
         
         <div class="media-card">
-            {% if item.poster_path %}
-                <img src="{{ TMDB_IMG }}{{ item.poster_path }}" alt="{{ title }}" class="card-poster">
-            {% else %}
-                <div class="no-poster">No image</div>
-            {% endif %}
+            <a href="{{ url_for('media_detail', media_type=type, tmdb_id=item.id) }}" class="media-link">
+                {% if item.poster_path %}
+                    <img src="{{ TMDB_IMG }}{{ item.poster_path }}" alt="{{ title }}" class="card-poster">
+                {% else %}
+                    <div class="no-poster">No image</div>
+                {% endif %}
+            </a>
             
             <div class="card-body">
-                <h3 class="card-title">{{ title }}</h3>
+                <a href="{{ url_for('media_detail', media_type=type, tmdb_id=item.id) }}" class="card-title-link">
+                    <h3 class="card-title">{{ title }}</h3>
+                </a>
                 <p class="card-sub">{{ year }} · {{ 'Movie' if type == 'movie' else 'TV' }}</p>
                 
                 <div class="card-actions">

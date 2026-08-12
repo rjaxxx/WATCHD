@@ -5,18 +5,24 @@
     <h1>Watched</h1>
     <p class="page-sub">Movies and TV shows you've watched</p>
 </div>
+
 {% if items %}
     <div class="results-grid">
         {% for item in items %}
             {% set media = item.media %}
             <div class="media-card watched-card">
-                {% if media.poster_url %}
-                    <img src="{{ TMDB_IMG }}{{ media.poster_url }}" alt="{{ media.title }}" class="card-poster">
-                {% else %}
-                    <div class="no-poster">No image</div>
-                {% endif %}
+                <a href="{{ url_for('media_detail', media_type=media.media_type, tmdb_id=media.tmdb_id) }}" class="media-link">
+                    {% if media.poster_url %}
+                        <img src="{{ TMDB_IMG }}{{ media.poster_url }}" alt="{{ media.title }}" class="card-poster">
+                    {% else %}
+                        <div class="no-poster">No image</div>
+                    {% endif %}
+                </a>
+                
                 <div class="card-body">
-                    <h3 class="card-title">{{ media.title }}</h3>
+                    <a href="{{ url_for('media_detail', media_type=media.media_type, tmdb_id=media.tmdb_id) }}" class="card-title-link">
+                        <h3 class="card-title">{{ media.title }}</h3>
+                    </a>
                     <p class="card-sub">{{ media.release_year or 'Unknown' }} · {{ 'Movie' if media.media_type == 'movie' else 'TV' }}</p>
                     
                     {% if item.rating %}
@@ -24,20 +30,19 @@
                             <span class="rating-number">{{ item.rating }}/10</span>
                         </div>
                     {% endif %}
+                    
                     {% if item.review %}
                         <p class="review-text">"{{ item.review }}"</p>
                     {% endif %}
                     
                     <div class="card-actions">
                         <button class="btn-small" onclick="openEditModal('{{ item.watched_id }}', '{{ item.rating or '' }}', '{{ item.review or ''|replace("'", "\\'") }}')">
-                            <i class="fa-regular fa-pen-to-square" aria-hidden="true"></i>
-                            Edit
+                            <i class="fa-regular fa-pen-to-square" aria-hidden="true"></i> Edit
                         </button>
                         <form method="POST" action="{{ url_for('remove_from_watched') }}" class="inline-form" onsubmit="return confirm('Remove this from your watched list?')">
                             <input type="hidden" name="watched_id" value="{{ item.watched_id }}">
                             <button type="submit" class="btn-small btn-danger">
-                                <i class="fa-regular fa-trash-can" aria-hidden="true"></i>
-                                Delete
+                                <i class="fa-regular fa-trash-can" aria-hidden="true"></i> Delete
                             </button>
                         </form>
                     </div>
@@ -52,6 +57,8 @@
         <a href="{{ url_for('search') }}" class="btn-primary">Search</a>
     </div>
 {% endif %}
+
+<!-- Edit Modal -->
 <div id="editModal" class="modal">
     <div class="modal-content">
         <span class="close" onclick="closeEditModal()">×</span>
@@ -73,12 +80,15 @@
                 <option value="2">2 - Terrible</option>
                 <option value="1">1 - Worst ever</option>
             </select>
+            
             <label for="editReview">Review (optional):</label>
             <textarea name="review" id="editReview" rows="3" placeholder="What did you think?"></textarea>
+            
             <button type="submit" class="btn-primary">Update</button>
         </form>
     </div>
 </div>
+
 <script>
 function openEditModal(watchedId, rating, review) {
     document.getElementById('editWatchedId').value = watchedId;
@@ -86,13 +96,16 @@ function openEditModal(watchedId, rating, review) {
     document.getElementById('editReview').value = review || '';
     document.getElementById('editModal').style.display = 'block';
 }
+
 function closeEditModal() {
     document.getElementById('editModal').style.display = 'none';
 }
+
 window.onclick = function(event) {
     const modal = document.getElementById('editModal');
     if (event.target === modal) closeEditModal();
 }
+
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') closeEditModal();
 });

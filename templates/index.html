@@ -15,17 +15,22 @@
             {% set type = item.media_type or ('movie' if item.title else 'tv') %}
             
             <div class="media-card">
-                {% if item.poster_path %}
-                    <img src="{{ TMDB_IMG }}{{ item.poster_path }}" alt="{{ title }}" class="card-poster">
-                {% else %}
-                    <div class="no-poster">No image</div>
-                {% endif %}
+                <a href="{{ url_for('media_detail', media_type=type, tmdb_id=item.id) }}" class="media-link">
+                    {% if item.poster_path %}
+                        <img src="{{ TMDB_IMG }}{{ item.poster_path }}" alt="{{ title }}" class="card-poster">
+                    {% else %}
+                        <div class="no-poster">No image</div>
+                    {% endif %}
+                </a>
                 
                 <div class="card-body">
-                    <h3 class="card-title">{{ title }}</h3>
+                    <a href="{{ url_for('media_detail', media_type=type, tmdb_id=item.id) }}" class="card-title-link">
+                        <h3 class="card-title">{{ title }}</h3>
+                    </a>
                     <p class="card-sub">{{ year }} · {{ 'Movie' if type == 'movie' else 'TV' }}</p>
                     
                     <div class="card-actions">
+                        <!-- Watchlist button -->
                         {% if item.in_watchlist %}
                             <form method="POST" action="{{ url_for('remove_from_watchlist_by_media') }}" class="inline-form">
                                 <input type="hidden" name="tmdb_id" value="{{ item.id }}">
@@ -64,7 +69,7 @@
     </div>
 {% endif %}
 
-<!-- Rating Modal -->
+<!-- Rating Modal (same as before) -->
 <div id="ratingModal" class="modal">
     <div class="modal-content">
         <span class="close" onclick="closeRatingModal()">×</span>

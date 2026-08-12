@@ -404,6 +404,24 @@ def add_status_to_items(items, user_id):
     return items
 
 
+# detailed view
+@app.route('/media/<media_type>/<tmdb_id>')
+@login_required
+def media_detail(media_type, tmdb_id):
+    # fetch details
+    details = fetch_media_details(tmdb_id, media_type)
+    if not details:
+        return render_template('404.html'), 404
+    media = get_or_create_media(tmdb_id, media_type)
+    in_watchlist = Watchlist.query.filter_by(user_id=current_user.user_id, media_id=media.media_id).first() is not None
+    in_watched = Watched.query.filter_by(user_id=current_user.user_id, media_id=media.media_id).first()
+    return render_template('media_detail.html',
+                           details=details,
+                           media=media,
+                           in_watchlist=in_watchlist,
+                           in_watched=in_watched)
+
+
 # run
 
 if __name__ == '__main__':

@@ -11,29 +11,31 @@
         {% for item in items %}
             {% set media = item.media %}
             <div class="media-card">
-                {% if media.poster_url %}
-                    <img src="{{ TMDB_IMG }}{{ media.poster_url }}" alt="{{ media.title }}" class="card-poster">
-                {% else %}
-                    <div class="no-poster">No image</div>
-                {% endif %}
+                <a href="{{ url_for('media_detail', media_type=media.media_type, tmdb_id=media.tmdb_id) }}" class="media-link">
+                    {% if media.poster_url %}
+                        <img src="{{ TMDB_IMG }}{{ media.poster_url }}" alt="{{ media.title }}" class="card-poster">
+                    {% else %}
+                        <div class="no-poster">No image</div>
+                    {% endif %}
+                </a>
                 
                 <div class="card-body">
-                    <h3 class="card-title">{{ media.title }}</h3>
+                    <a href="{{ url_for('media_detail', media_type=media.media_type, tmdb_id=media.tmdb_id) }}" class="card-title-link">
+                        <h3 class="card-title">{{ media.title }}</h3>
+                    </a>
                     <p class="card-sub">{{ media.release_year or 'Unknown' }} · {{ 'Movie' if media.media_type == 'movie' else 'TV' }}</p>
                     
                     <div class="card-actions">
-                        <!-- Move to Watched button (opens modal) -->
+                        <!-- Move to Watched button -->
                         <button class="btn-small btn-rate" onclick="openRatingModal('{{ media.tmdb_id }}', '{{ media.media_type }}', '{{ media.title|replace("'", "\\'") }}', '{{ media.release_year or '' }}', '{{ media.poster_url or '' }}')">
-                            <i class="fa-regular fa-circle-check" aria-hidden="true"></i>
-                            Watched
+                            <i class="fa-regular fa-circle-check" aria-hidden="true"></i> Watched
                         </button>
                         
                         <!-- Remove from watchlist -->
                         <form method="POST" action="{{ url_for('remove_from_watchlist') }}" class="inline-form" onsubmit="return confirm('Remove this from your watchlist?')">
                             <input type="hidden" name="watchlist_id" value="{{ item.watchlist_id }}">
                             <button type="submit" class="btn-small btn-danger">
-                                <i class="fa-regular fa-trash-can" aria-hidden="true"></i>
-                                Remove
+                                <i class="fa-regular fa-trash-can" aria-hidden="true"></i> Remove
                             </button>
                         </form>
                     </div>
@@ -49,7 +51,7 @@
     </div>
 {% endif %}
 
-<!-- Rating Modal (reused from search page) -->
+<!-- Rating Modal (same as before) -->
 <div id="ratingModal" class="modal">
     <div class="modal-content">
         <span class="close" onclick="closeRatingModal()">×</span>
