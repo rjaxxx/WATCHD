@@ -3,6 +3,33 @@
 {% block content %}
 <h1 style="margin-bottom: 30px">Welcome to Watchd</h1>
 
+<!-- filter -->
+<form method="GET" action="{{ url_for('index') }}" class="filter-form">
+    <div class="filter-row">
+        <div class="filter-group">
+            <label for="genre">Genre</label>
+            <select name="genre" id="genre" class="filter-select">
+                <option value="">All Genres</option>
+                {% for id, name in genres.items() %}
+                    <option value="{{ id }}" {% if selected_genre == id %}selected{% endif %}>{{ name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="filter-group">
+            <label for="sort">Sort by</label>
+            <select name="sort" id="sort" class="filter-select">
+                <option value="popularity.desc" {% if selected_sort == 'popularity.desc' %}selected{% endif %}>Popularity</option>
+                <option value="vote_average.desc" {% if selected_sort == 'vote_average.desc' %}selected{% endif %}>Highest Rated</option>
+                <option value="vote_count.desc" {% if selected_sort == 'vote_count.desc' %}selected{% endif %}>Most Votes</option>
+                <option value="release_date.desc" {% if selected_sort == 'release_date.desc' %}selected{% endif %}>Newest</option>
+                <option value="title.asc" {% if selected_sort == 'title.asc' %}selected{% endif %}>Title A-Z</option>
+            </select>
+        </div>
+        <button type="submit" class="btn-primary">Apply</button>
+        <a href="{{ url_for('index') }}" class="btn-secondary">Reset</a>
+    </div>
+</form>
+
 {% if trending %}
     <h2>Trending Today</h2>
     <div class="results-grid">
@@ -28,6 +55,9 @@
                         <h3 class="card-title">{{ title }}</h3>
                     </a>
                     <p class="card-sub">{{ year }} · {{ 'Movie' if type == 'movie' else 'TV' }}</p>
+                    {% if item.vote_average %}
+                        <p class="card-rating">⭐ {{ item.vote_average|round(1) }} / 10 ({{ item.vote_count }} votes)</p>
+                    {% endif %}
                     
                     <div class="card-actions">
                         <!-- Watchlist button -->
@@ -69,10 +99,10 @@
     </div>
 {% endif %}
 
-<!-- Rating Modal (same as before) -->
+<!-- Rating Modal -->
 <div id="ratingModal" class="modal">
     <div class="modal-content">
-        <span class="close" onclick="closeRatingModal()">×</span>
+        <span class="close" onclick="closeRatingModal()">x</span>
         <h3>Rate & Add to Watched</h3>
         <form method="POST" action="{{ url_for('add_to_watched') }}" id="ratingForm">
             <input type="hidden" name="tmdb_id" id="modalTmdbId">

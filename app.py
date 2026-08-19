@@ -155,11 +155,37 @@ def fetch_media_details(tmdb_id, media_type):
     return None
 
 
+GENRE_CACHE = {}
+
+def get_genres(media_type='movie'):
+    # fetch genres
+    cache_key = media_type
+    if cache_key in GENRE_CACHE:
+        return GENRE_CACHE[cache_key]
+
+    url = f'{TMDB_BASE}/genre/{media_type}/list'
+    params = {'api_key': TMDB_API_KEY, 'language': 'en-US'}
+    try:
+        resp = requests.get(url, params=params, timeout=5)
+        if resp.status_code == 200:
+            data = resp.json()
+            genres = {str(genre['id']): genre['name'] for genre in data.get('genres', [])}
+            GENRE_CACHE[cache_key] = genres
+            return genres
+        else:
+            return {}
+    except:
+        return {}
+
+
 # routes
 
 @app.route('/')
 def index():
     trending = []
+    sort_by = request.args.get('sort', 'popularity.desc')  # default
+    genre_id = request.args.get('genre', '')
+
     try:
         resp = requests.get(
             f'{TMDB_BASE}/trending/all/day',
@@ -170,10 +196,43 @@ def index():
             trending = resp.json().get('results', [])
             if current_user.is_authenticated:
                 trending = add_status_to_items(trending, current_user.user_id)
+
+            # filter by genre
+            if genre_id:
+                genre_id = str(genre_id)
+                trending = [item for item in trending if genre_id in [str(g) for g in item.get('genre_ids', [])]]
+
+            # sort
+            sort_map = {
+                'popularity.desc': lambda x: x.get('popularity', 0),
+                'vote_average.desc': lambda x: x.get('vote_average', 0),
+                'vote_count.desc': lambda x: x.get('vote_count', 0),
+                'release_date.desc': lambda x: x.get('release_date') or x.get('first_air_date') or '1970-01-01',
+                'title.asc': lambda x: (x.get('title') or x.get('name') or '').lower(),
+            }
+            sort_key = sort_map.get(sort_by, sort_map['popularity.desc'])
+            trending.sort(key=sort_key, reverse=True)
+
+            if sort_by == 'title.asc':
+                trending.sort(key=sort_key, reverse=False)
+            else:
+                trending.sort(key=sort_key, reverse=True)
+
     except Exception as e:
         print(f"Error fetching trending: {e}")
         trending = []
-    return render_template('index.html', trending=trending)
+
+    genres = get_genres('movie')
+    genres_tv = get_genres('tv')
+    for k, v in genres_tv.items():
+        if k not in genres:
+            genres[k] = v
+
+    return render_template('index.html', 
+                           trending=trending, 
+                           genres=genres,
+                           selected_genre=genre_id,
+                           selected_sort=sort_by)
 
 
 
@@ -404,7 +463,7 @@ def add_status_to_items(items, user_id):
     return items
 
 
-# detailed view
+# detailed view page
 @app.route('/media/<media_type>/<tmdb_id>')
 @login_required
 def media_detail(media_type, tmdb_id):

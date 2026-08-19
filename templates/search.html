@@ -41,6 +41,9 @@
                     <h3 class="card-title">{{ title }}</h3>
                 </a>
                 <p class="card-sub">{{ year }} · {{ 'Movie' if type == 'movie' else 'TV' }}</p>
+                {% if item.vote_average %}
+                    <p class="card-rating">⭐ {{ item.vote_average|round(1) }} / 10 ({{ item.vote_count }} votes)</p>
+                {% endif %}
                 
                 <div class="card-actions">
                     <!-- Watchlist button -->

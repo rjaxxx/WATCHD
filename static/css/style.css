@@ -699,3 +699,65 @@ main {
 .card-title-link:hover .card-title {
     color: var(--purple-light);
 }
+
+/* Filter bar */
+.filter-form {
+    margin-bottom: 24px;
+    padding: 16px;
+    background: var(--bg-card);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+}
+.filter-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+}
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 120px;
+}
+.filter-group label {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+.filter-select {
+    padding: 8px 12px;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 14px;
+    cursor: pointer;
+}
+.filter-select:focus {
+    outline: none;
+    border-color: var(--purple);
+}
+.filter-row .btn-primary,
+.filter-row .btn-secondary {
+    padding: 8px 16px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+}
+.filter-row .btn-secondary {
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    text-decoration: none;
+    border-radius: 6px;
+}
+.filter-row .btn-secondary:hover {
+    background: var(--bg-hover);
+}
+
+.card-rating {
+    font-size: 11px;
+    color: var(--amber);
+    margin: 2px 0 8px;
+}
