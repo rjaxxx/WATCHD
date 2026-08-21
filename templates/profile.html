@@ -1,0 +1,44 @@
+<!-- Extends base layout -->
+{% extends 'base.html' %}
+{% block title %}Profile - Watchd{% endblock %}
+{% block content %}
+
+<div class="profile-container">
+    <div class="profile-card">
+        <!-- Profile avatar icon -->
+        <div class="profile-avatar">
+            {% if current_user.username %}
+                <span class="avatar-letter">{{ current_user.username[0].upper() }}</span>
+            {% else %}
+                <i class="fa-solid fa-user fa-3x" aria-hidden="true"></i>
+            {% endif %}
+        </div>
+        
+        <!-- User information -->
+        <h1 class="profile-username">{{ current_user.username }}</h1>
+        <p class="profile-email">{{ current_user.email }}</p>
+        
+        <!-- User stats section -->
+        <div class="profile-details">
+            <div class="profile-detail-item">
+                <span class="detail-label">Account created:</span>
+                <span class="detail-value">{{ current_user.created_at.strftime('%B %d, %Y') }}</span>
+            </div>
+            <div class="profile-detail-item">
+                <span class="detail-label">Watched:</span>
+                <span class="detail-value">{{ current_user.watched|length }} items</span>
+            </div>
+            <div class="profile-detail-item">
+                <span class="detail-label">Watchlist:</span>
+                <span class="detail-value">{{ current_user.watchlist|length }} items</span>
+            </div>
+        </div>
+        
+        <!-- Profile action buttons -->
+        <div class="profile-actions">
+            <a href="{{ url_for('logout') }}" class="btn-primary" style="background: var(--red);">Logout</a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

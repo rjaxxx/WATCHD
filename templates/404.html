@@ -1,9 +1,13 @@
+<!-- Extends the base layout template -->
 {% extends 'base.html' %}
+<!-- Sets the browser tab title for the 404 error page -->
 {% block title %}404 - Watchd{% endblock %}
 {% block content %}
+<!-- Wrapper container for the 404 message and home link -->
 <div class="form-container">
     <h1>404 - Page not found</h1>
     <p>That page doesn't exist.</p>
+    <!-- Link to redirect the user back to the home page -->
     <a href="{{ url_for('index') }}">Go home</a>
 </div>
 {% endblock %}

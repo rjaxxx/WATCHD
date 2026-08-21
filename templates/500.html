@@ -1,9 +1,13 @@
+<!-- Extends the base layout template -->
 {% extends 'base.html' %}
+<!-- Sets the browser tab title for the 500 error page -->
 {% block title %}500 - Watchd{% endblock %}
 {% block content %}
+<!-- Wrapper container for the server error message -->
 <div class="form-container">
     <h1>500 - Something went wrong</h1>
     <p>There was a server error. Try again later.</p>
+    <!-- Link to redirect the user back to the home page -->
     <a href="{{ url_for('index') }}">Go home</a>
 </div>
 {% endblock %}

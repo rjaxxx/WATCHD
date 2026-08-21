@@ -1,9 +1,11 @@
+<!-- Extends base layout -->
 {% extends 'base.html' %}
 {% block title %}Search - Watchd{% endblock %}
 {% block content %}
 <div class="search-header">
     <h1>Search</h1>
 
+    <!-- Search input filter form -->
     <form method="GET" action="{{ url_for('search') }}">
         {{ form.hidden_tag() }}
         <div class="search-row">
@@ -14,13 +16,16 @@
     </form>
 </div>
 
+<!-- Empty search state messaging -->
 {% if query and results|length == 0 %}
     <p class="no-results">No results found for "{{ query }}".</p>
 {% endif %}
 
+<!-- Search results grid list -->
 {% if results %}
 <div class="results-grid">
     {% for item in results %}
+        <!-- Parse details for individual search items -->
         {% set title = item.title if type == 'movie' else item.name %}
         {% set date  = item.release_date if type == 'movie' else item.first_air_date %}
         {% set year  = date[:4] if date else 'Unknown' %}
@@ -46,7 +51,7 @@
                 {% endif %}
                 
                 <div class="card-actions">
-                    <!-- Watchlist button -->
+                    <!-- Watchlist button action logic -->
                     {% if item.in_watchlist %}
                         <form method="POST" action="{{ url_for('remove_from_watchlist_by_media') }}" class="inline-form">
                             <input type="hidden" name="tmdb_id" value="{{ item.id }}">
@@ -68,7 +73,7 @@
                         </form>
                     {% endif %}
 
-                    <!-- Rate button -->
+                    <!-- Rate button action logic -->
                     {% if item.in_watched %}
                         <button class="btn-small" disabled style="background: var(--green); color: white; border-color: var(--green);">
                             <i class="fa-solid fa-check" aria-hidden="true"></i> Rated
@@ -85,7 +90,7 @@
 </div>
 {% endif %}
 
-<!-- Rating Modal -->
+<!-- Rating Modal Component -->
 <div id="ratingModal" class="modal">
     <div class="modal-content">
         <span class="close" onclick="closeRatingModal()">×</span>
@@ -120,6 +125,7 @@
     </div>
 </div>
 
+<!-- Modal Control Scripts -->
 <script>
 function openRatingModal(button) {
     const tmdbId = button.dataset.tmdbId;

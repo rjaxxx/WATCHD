@@ -1,13 +1,17 @@
+<!-- Extends base layout -->
 {% extends 'base.html' %}
 {% block title %}Log in - Watchd{% endblock %}
 {% block content %}
+<!-- Login container box -->
 <div class="form-container">
     <h1>Log in</h1>
     <form method="POST">
+        <!-- CSRF token hidden field -->
         {{ form.hidden_tag() }}
         <div class="field">
             {{ form.username.label }}
             {{ form.username(class="form-input") }}
+            <!-- Username validation error list -->
             {% for error in form.username.errors %}
                 <p class="error">{{ error }}</p>
             {% endfor %}
@@ -15,6 +19,7 @@
         <div class="field">
             {{ form.password.label }}
             {{ form.password(class="form-input") }}
+            <!-- Password validation error list -->
             {% for error in form.password.errors %}
                 <p class="error">{{ error }}</p>
             {% endfor %}

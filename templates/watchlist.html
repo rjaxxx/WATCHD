@@ -1,3 +1,4 @@
+<!-- Extends base layout -->
 {% extends 'base.html' %}
 {% block title %}My Watchlist - Watchd{% endblock %}
 {% block content %}
@@ -6,6 +7,7 @@
     <p class="page-sub">Movies and TV shows you want to watch</p>
 </div>
 
+<!-- Check if items exist in watchlist -->
 {% if items %}
     <div class="results-grid">
         {% for item in items %}
@@ -26,12 +28,12 @@
                     <p class="card-sub">{{ media.release_year or 'Unknown' }} · {{ 'Movie' if media.media_type == 'movie' else 'TV' }}</p>
                     
                     <div class="card-actions">
-                        <!-- Move to Watched button -->
+                        <!-- Move to Watched / Rating modal trigger -->
                         <button class="btn-small btn-rate" onclick="openRatingModal('{{ media.tmdb_id }}', '{{ media.media_type }}', '{{ media.title|replace("'", "\\'") }}', '{{ media.release_year or '' }}', '{{ media.poster_url or '' }}')">
                             <i class="fa-regular fa-circle-check" aria-hidden="true"></i> Watched
                         </button>
                         
-                        <!-- Remove from watchlist -->
+                        <!-- Remove from watchlist form action -->
                         <form method="POST" action="{{ url_for('remove_from_watchlist') }}" class="inline-form" onsubmit="return confirm('Remove this from your watchlist?')">
                             <input type="hidden" name="watchlist_id" value="{{ item.watchlist_id }}">
                             <button type="submit" class="btn-small btn-danger">
@@ -44,6 +46,7 @@
         {% endfor %}
     </div>
 {% else %}
+    <!-- Empty state view when watchlist is empty -->
     <div class="empty-state">
         <h2>Your watchlist is empty</h2>
         <p>Search for movies or TV shows to add them to your watchlist.</p>
@@ -51,7 +54,7 @@
     </div>
 {% endif %}
 
-<!-- Rating Modal (same as before) -->
+<!-- Rating Modal Component -->
 <div id="ratingModal" class="modal">
     <div class="modal-content">
         <span class="close" onclick="closeRatingModal()">×</span>
@@ -86,6 +89,7 @@
     </div>
 </div>
 
+<!-- Modal Control Scripts -->
 <script>
 function openRatingModal(tmdbId, mediaType, title, year, poster) {
     document.getElementById('modalTmdbId').value = tmdbId;

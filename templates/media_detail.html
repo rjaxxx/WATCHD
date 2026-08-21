@@ -1,8 +1,11 @@
+<!-- Extends base layout -->
 {% extends 'base.html' %}
+<!-- Dynamic page title -->
 {% block title %}{{ details.title or details.name }} - Watchd{% endblock %}
 {% block content %}
 <div class="detail-container">
     <div class="detail-poster">
+        <!-- Poster display with fallback check -->
         {% if details.poster_path %}
             <img src="{{ TMDB_IMG }}{{ details.poster_path }}" alt="{{ details.title or details.name }}">
         {% else %}
@@ -12,6 +15,7 @@
     
     <div class="detail-info">
         <h1>{{ details.title or details.name }}</h1>
+        <!-- Meta information (year, runtime, episode count) -->
         <p class="detail-meta">
             {{ (details.release_date or details.first_air_date or 'Unknown')[:4] }}
             · {{ 'Movie' if media.media_type == 'movie' else 'TV Series' }}
@@ -23,6 +27,7 @@
             {% endif %}
         </p>
         
+        <!-- Genre tags display -->
         {% if details.genres %}
         <p class="detail-genres">
             {% for genre in details.genres %}
@@ -31,6 +36,7 @@
         </p>
         {% endif %}
         
+        <!-- Overview / synopsis section -->
         {% if details.overview %}
         <div class="detail-overview">
             <h3>Overview</h3>
@@ -39,7 +45,7 @@
         {% endif %}
         
         <div class="detail-actions">
-            <!-- Watchlist button -->
+            <!-- Watchlist state action button -->
             {% if in_watchlist %}
                 <form method="POST" action="{{ url_for('remove_from_watchlist_by_media') }}" class="inline-form">
                     <input type="hidden" name="tmdb_id" value="{{ media.tmdb_id }}">
@@ -61,7 +67,7 @@
                 </form>
             {% endif %}
 
-            <!-- Watched / Rate button -->
+            <!-- Watched / Rating status button -->
             {% if in_watched %}
                 <button class="btn-small" disabled style="background: var(--green); color: white; border-color: var(--green);">
                     <i class="fa-solid fa-check" aria-hidden="true"></i> Rated {{ in_watched.rating }}/10
@@ -78,10 +84,10 @@
     </div>
 </div>
 
-<!-- Rating Modal -->
+<!-- Rating Modal Component -->
 <div id="ratingModal" class="modal">
     <div class="modal-content">
-        <span class="close" onclick="closeRatingModal()">×</span>
+        <span class="close" onclick="closeRatingModal()">x</span>
         <h3>Rate & Add to Watched</h3>
         <form method="POST" action="{{ url_for('add_to_watched') }}" id="ratingForm">
             <input type="hidden" name="tmdb_id" id="modalTmdbId">
@@ -113,6 +119,7 @@
     </div>
 </div>
 
+<!-- Modal Control Scripts -->
 <script>
 function openRatingModal(tmdbId, mediaType, title, year, poster) {
     document.getElementById('modalTmdbId').value = tmdbId;

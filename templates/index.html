@@ -1,9 +1,10 @@
+<!-- Extends base layout -->
 {% extends 'base.html' %}
 {% block title %}Watchd - Home{% endblock %}
 {% block content %}
 <h1 style="margin-bottom: 30px">Welcome to Watchd</h1>
 
-<!-- filter -->
+<!-- Filter and sort options form -->
 <form method="GET" action="{{ url_for('index') }}" class="filter-form">
     <div class="filter-row">
         <div class="filter-group">
@@ -30,10 +31,12 @@
     </div>
 </form>
 
+<!-- Trending media display section -->
 {% if trending %}
-    <h2>Trending Today</h2>
+    <h2>{% if selected_genre %}Trending Today - {{ genres.get(selected_genre, 'Movies') }}{% else %}Trending Today{% endif %}</h2>
     <div class="results-grid">
         {% for item in trending[:30] %}
+            <!-- Parse out variables and fallbacks for cards -->
             {% set title = item.title or item.name %}
             {% set date = item.release_date or item.first_air_date %}
             {% set year = date[:4] if date else 'Unknown' %}
@@ -60,7 +63,7 @@
                     {% endif %}
                     
                     <div class="card-actions">
-                        <!-- Watchlist button -->
+                        <!-- Watchlist button logic -->
                         {% if item.in_watchlist %}
                             <form method="POST" action="{{ url_for('remove_from_watchlist_by_media') }}" class="inline-form">
                                 <input type="hidden" name="tmdb_id" value="{{ item.id }}">
@@ -82,7 +85,7 @@
                             </form>
                         {% endif %}
                         
-                        <!-- Rate button -->
+                        <!-- Rate button logic -->
                         {% if item.in_watched %}
                             <button class="btn-small" disabled style="background: var(--green); color: white; border-color: var(--green);">
                                 <i class="fa-solid fa-check" aria-hidden="true"></i> Rated
@@ -97,9 +100,18 @@
             </div>
         {% endfor %}
     </div>
+{% else %}
+    <!-- Fallback if no trending items match filter -->
+    <div class="no-results">
+        {% if selected_genre %}
+            <p>No trending items found for this genre. Try a different genre or <a href="{{ url_for('index') }}">reset the filter</a>.</p>
+        {% else %}
+            <p>Unable to load trending content. Please try again later.</p>
+        {% endif %}
+    </div>
 {% endif %}
 
-<!-- Rating Modal -->
+<!-- Rating Modal Component -->
 <div id="ratingModal" class="modal">
     <div class="modal-content">
         <span class="close" onclick="closeRatingModal()">x</span>
@@ -134,6 +146,7 @@
     </div>
 </div>
 
+<!-- Modal Control Scripts -->
 <script>
 function openRatingModal(button) {
     const tmdbId = button.dataset.tmdbId;

@@ -1,3 +1,4 @@
+<!-- Extends base layout -->
 {% extends 'base.html' %}
 {% block title %}Watched - Watchd{% endblock %}
 {% block content %}
@@ -6,6 +7,7 @@
     <p class="page-sub">Movies and TV shows you've watched</p>
 </div>
 
+<!-- Render grid list if items exist -->
 {% if items %}
     <div class="results-grid">
         {% for item in items %}
@@ -25,20 +27,24 @@
                     </a>
                     <p class="card-sub">{{ media.release_year or 'Unknown' }} · {{ 'Movie' if media.media_type == 'movie' else 'TV' }}</p>
                     
+                    <!-- User rating badge display -->
                     {% if item.rating %}
                         <div class="rating-display">
                             <span class="rating-number">{{ item.rating }}/10</span>
                         </div>
                     {% endif %}
                     
+                    <!-- User review text display -->
                     {% if item.review %}
                         <p class="review-text">"{{ item.review }}"</p>
                     {% endif %}
                     
                     <div class="card-actions">
+                        <!-- Edit button for opening edit modal -->
                         <button class="btn-small" onclick="openEditModal('{{ item.watched_id }}', '{{ item.rating or '' }}', '{{ item.review or ''|replace("'", "\\'") }}')">
                             <i class="fa-regular fa-pen-to-square" aria-hidden="true"></i> Edit
                         </button>
+                        <!-- Delete form action -->
                         <form method="POST" action="{{ url_for('remove_from_watched') }}" class="inline-form" onsubmit="return confirm('Remove this from your watched list?')">
                             <input type="hidden" name="watched_id" value="{{ item.watched_id }}">
                             <button type="submit" class="btn-small btn-danger">
@@ -51,6 +57,7 @@
         {% endfor %}
     </div>
 {% else %}
+    <!-- Empty state view when watched list is empty -->
     <div class="empty-state">
         <h2>Nothing watched yet</h2>
         <p>Search for movies or TV shows to start tracking.</p>
@@ -58,7 +65,7 @@
     </div>
 {% endif %}
 
-<!-- Edit Modal -->
+<!-- Edit Modal Component -->
 <div id="editModal" class="modal">
     <div class="modal-content">
         <span class="close" onclick="closeEditModal()">×</span>
@@ -89,6 +96,7 @@
     </div>
 </div>
 
+<!-- Edit Modal Control Scripts -->
 <script>
 function openEditModal(watchedId, rating, review) {
     document.getElementById('editWatchedId').value = watchedId;

@@ -3,24 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Dynamic block for page-specific titles -->
     <title>{% block title %}Watchd{% endblock %}</title>
+    <!-- Favicon and global stylesheets -->
     <link rel="icon" href="{{ url_for('static', filename='favicon.png') }}" type="image/png">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Font Awesome icons stylesheet -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 
 <body>
+    <!-- Main global navigation bar -->
     <nav>
+        <!-- Website brand logo and link -->
         <a href="{{ url_for('index') }}" class="nav-brand">
             <img src="{{ url_for('static', filename='favicon.png') }}" alt="Watchd logo" class="nav-logo">
             Watchd
         </a>
 
+        <!-- Central section containing search toggle/dropdown and navigation links -->
         <div class="nav-centre">
+    <!-- Render authenticated user controls only when logged in -->
     {% if current_user.is_authenticated %}
         <a href="{{ url_for('index') }}" class="nav-icon" title="Home" aria-label="Home">
             <i class="fa-solid fa-house" aria-hidden="true"></i>
         </a>
+        <!-- Quick search dropdown container -->
         <div class="nav-search">
             <button class="nav-icon nav-search-toggle" id="searchToggle" 
                     title="Quick search" aria-label="Quick search" type="button">
@@ -52,38 +60,41 @@
         <a href="{{ url_for('watched') }}" class="nav-icon" title="Watched" aria-label="Watched">
             <i class="fa-solid fa-tv" aria-hidden="true"></i>
         </a>
-
     {% endif %}
 </div>
 
+        <!-- Right-side navigation links -->
         <div class="nav-links">
             {% if current_user.is_authenticated %}
-                <span>{{ current_user.username }}</span>
-                <a href="{{ url_for('index') }}" class="nav-icon" title="Profile" aria-label="Profile">
+                <span class="nav-username">{{ current_user.username }}</span>
+                <a href="{{ url_for('profile') }}" class="nav-icon" title="Profile" aria-label="Profile">
                     <i class="fa-solid fa-user" aria-hidden="true"></i>
                 </a>
                 <a href="{{ url_for('logout') }}" class="nav-icon" title="Log out" aria-label="Log out">
                     <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>
                 </a>
             {% else %}
-                <a href="{{ url_for('login') }}" class="nav-icon" title="Login" aria-label="Login">
-                    <i class="fa-solid fa-circle-user" aria-hidden="true"></i>
+                <a href="{{ url_for('login') }}" class="nav-icon" title="Log in" aria-label="Log in">
+                    <i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i>
                 </a>
                 <a href="{{ url_for('register') }}" class="nav-icon" title="Register" aria-label="Register">
-                    <i class="fa-solid fa-user-pen" aria-hidden="true"></i>
+                    <i class="fa-solid fa-user-plus" aria-hidden="true"></i>
                 </a>
             {% endif %}
         </div>
     </nav>
+    
+    <!-- Main page content block -->
     <main>
         {% block content %}{% endblock %}
     </main>
+    
+    <!-- JavaScript for controlling the search dropdown state -->
     <script>
     const toggle   = document.getElementById('searchToggle');
     const dropdown = document.getElementById('searchDropdown');
     const input    = document.getElementById('navSearchInput');
 
-    // open/close when clicking the magnifying glass
     toggle.addEventListener('click', () => {
         dropdown.classList.toggle('open');
         if (dropdown.classList.contains('open')) {
@@ -91,14 +102,12 @@
         }
     });
 
-    // close when clicking anywhere else on the page
     document.addEventListener('click', (e) => {
         if (!toggle.contains(e.target) && !dropdown.contains(e.target)) {
             dropdown.classList.remove('open');
         }
     });
 
-    // close when pressing Escape
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             dropdown.classList.remove('open');
@@ -106,3 +115,4 @@
     });
 </script>
 </body>
+</html>

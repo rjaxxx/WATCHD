@@ -1,20 +1,21 @@
+/* Core application color palette */
 :root {
-    --bg-page:    #111111;
-    --bg-card:    #1a1a1a;
-    --bg-input:   #222222;
-    --border:     #2e2e2e;
-    --bg-hover:   #333333;
-    --text-primary:   #ffffff;
+    --bg-page: #111111;
+    --bg-card: #1a1a1a;
+    --bg-input: #222222;
+    --border: #2e2e2e;
+    --bg-hover: #333333;
+    --text-primary: #ffffff;
     --text-secondary: #aaaaaa;
-    --text-muted:     #666666;
-    --text-hint:      #555555;
-    --purple:       #534AB7;
+    --text-muted: #666666;
+    --text-hint: #555555;
+    --purple: #534AB7;
     --purple-hover: #6359d1;
     --purple-light: #9B94E8;
-    --green:        #1D9E75;
-    --green-hover:  #17835f;
-    --amber:        #F5A623;
-    --red:          #f87171;
+    --green: #1D9E75;
+    --green-hover: #17835f;
+    --amber: #F5A623;
+    --red: #f87171;
 }
 
 * {
@@ -29,8 +30,7 @@ body {
     font-family: sans-serif;
 }
 
-/* nav */
-
+/* Primary Navigation Bar Layout */
 nav {
     background: var(--bg-card);
     border-bottom: 1px solid var(--border);
@@ -63,7 +63,7 @@ nav {
     align-items: center;
     position: absolute;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translateX(-50%); /* Centers the element strictly to the page, ignoring siblings */
 }
 
 .nav-links {
@@ -77,7 +77,6 @@ nav {
     color: var(--text-secondary);
 }
 
-
 .nav-links a:not(.nav-icon) {
     color: var(--text-secondary);
     text-decoration: none;
@@ -89,7 +88,6 @@ nav {
     color: var(--text-primary);
     transform: scale(1.1);
 }
-
 
 .nav-icon {
     color: var(--text-secondary);
@@ -103,16 +101,14 @@ nav {
     transform: scale(1.1);
 }
 
-/* main */
-
+/* Base Content Container */
 main {
     padding: 32px 24px;
     max-width: 900px;
     margin: 0 auto;
 }
 
-/* forms */
-
+/* Authentication and User Input Forms */
 .form-container {
     max-width: 400px;
     margin: 40px auto;
@@ -168,7 +164,6 @@ main {
     background: var(--purple-hover);
 }
 
-
 .form-container p {
     font-size: 13px;
     color: var(--text-muted);
@@ -189,8 +184,7 @@ main {
     font-size: 13px;
 }
 
-/* search */
-
+/* Search Page Specifics */
 .search-header {
     margin-bottom: 8px;
 }
@@ -256,15 +250,22 @@ main {
     color: var(--text-muted);
     font-size: 14px;
     margin-top: 16px;
+    text-align: center;
+    padding: 40px 20px;
 }
 
+.no-results a {
+    color: var(--purple-light);
+}
+
+/* Prevents disabled buttons from registering clicks while reducing opacity */
 .btn-small:disabled {
     opacity: 0.8;
     cursor: default;
     pointer-events: none;
 }
 
-/* ── navbar quick search ─────────────────── */
+/* Navbar Search Dropdown Modal */
 .nav-search {
     position: relative;
 }
@@ -350,11 +351,75 @@ main {
     background: var(--purple-hover);
 }
 
-/* results */
+/* Trending and Filter Forms */
+.filter-form {
+    margin-bottom: 24px;
+    padding: 16px;
+    background: var(--bg-card);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+}
 
+.filter-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 120px;
+}
+
+.filter-group label {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.filter-select {
+    padding: 8px 12px;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: var(--purple);
+}
+
+.filter-row .btn-primary,
+.filter-row .btn-secondary {
+    padding: 8px 16px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+}
+
+.filter-row .btn-secondary {
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    text-decoration: none;
+    border-radius: 6px;
+}
+
+.filter-row .btn-secondary:hover {
+    background: var(--bg-hover);
+}
+
+/* Standardized Media Grid Layout */
 .results-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* was 150px */
+    /* Auto-fill ensures cards wrap cleanly based on container size */
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 16px;
     margin-top: 24px;
 }
@@ -375,10 +440,11 @@ main {
 .card-poster {
     width: 100%;
     display: block;
-    aspect-ratio: 2/3;
+    aspect-ratio: 2/3; /* Enforces traditional movie poster dimensions uniformly */
     object-fit: cover;
 }
 
+/* Fallback for items missing a TMDB poster */
 .no-poster {
     aspect-ratio: 2/3;
     background: var(--bg-input);
@@ -398,6 +464,8 @@ main {
     font-weight: 600;
     color: var(--text-primary);
     margin-bottom: 4px;
+    
+    /* Truncates excessively long titles with an ellipsis */
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -408,8 +476,12 @@ main {
     color: var(--text-muted);
 }
 
+.card-rating {
+    font-size: 11px;
+    color: var(--amber);
+    margin: 2px 0 8px;
+}
 
-/* card actions */
 .card-actions {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -452,7 +524,7 @@ main {
     background: var(--purple-hover);
 }
 
-/* modal */
+/* Pop-up Modals (Used for Reviews/Ratings) */
 .modal {
     display: none;
     position: fixed;
@@ -507,7 +579,7 @@ main {
     color: var(--text-primary);
 }
 
-/* Watched page */
+/* User Watched Display Styling */
 .rating-display {
     display: flex;
     align-items: center;
@@ -582,28 +654,7 @@ main {
     background: var(--red);
 }
 
-
-/* for mobile */
-@media (max-width: 480px) {
-    .results-grid {
-        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-        gap: 10px;
-    }
-    
-    .btn-small {
-        font-size: 10px;
-        padding: 4px 6px;
-    }
-    
-    .btn-small i {
-        font-size: 9px;
-    }
-    
-    .card-actions {
-        gap: 4px;
-    }
-}
-
+/* Detailed Media Overview Layout */
 .detail-container {
     display: flex;
     gap: 30px;
@@ -676,15 +727,6 @@ main {
     background: var(--bg-hover);
 }
 
-/* detail page */
-@media (max-width: 768px) {
-    .detail-poster {
-        flex: 0 0 100%;
-        max-width: 300px;
-        margin: 0 auto;
-    }
-}
-
 .media-link {
     display: block;
     text-decoration: none;
@@ -700,64 +742,121 @@ main {
     color: var(--purple-light);
 }
 
-/* Filter bar */
-.filter-form {
-    margin-bottom: 24px;
-    padding: 16px;
-    background: var(--bg-card);
-    border-radius: 8px;
-    border: 1px solid var(--border);
-}
-.filter-row {
-    display: flex;
-    gap: 16px;
-    flex-wrap: wrap;
-    align-items: flex-end;
-}
-.filter-group {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    flex: 1;
-    min-width: 120px;
-}
-.filter-group label {
-    font-size: 13px;
-    color: var(--text-muted);
-}
-.filter-select {
-    padding: 8px 12px;
-    background: var(--bg-input);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    color: var(--text-primary);
-    font-size: 14px;
-    cursor: pointer;
-}
-.filter-select:focus {
-    outline: none;
-    border-color: var(--purple);
-}
-.filter-row .btn-primary,
-.filter-row .btn-secondary {
-    padding: 8px 16px;
-    height: 40px;
-    display: inline-flex;
-    align-items: center;
-}
-.filter-row .btn-secondary {
-    background: var(--bg-input);
-    border: 1px solid var(--border);
-    color: var(--text-primary);
-    text-decoration: none;
-    border-radius: 6px;
-}
-.filter-row .btn-secondary:hover {
-    background: var(--bg-hover);
+/* Mobile Responsiveness Overrides */
+@media (max-width: 480px) {
+    .results-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 10px;
+    }
+    
+    .btn-small {
+        font-size: 10px;
+        padding: 4px 6px;
+    }
+    
+    .btn-small i {
+        font-size: 9px;
+    }
+    
+    .card-actions {
+        gap: 4px;
+    }
 }
 
-.card-rating {
-    font-size: 11px;
-    color: var(--amber);
-    margin: 2px 0 8px;
+@media (max-width: 768px) {
+    .detail-poster {
+        flex: 0 0 100%;
+        max-width: 300px;
+        margin: 0 auto;
+    }
+}
+
+/* Profile Page */
+.profile-container {
+    max-width: 500px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.profile-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 40px;
+    text-align: center;
+}
+
+/* Profile avatar circle */
+.profile-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: var(--bg-input);
+    border: 2px solid var(--purple);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    color: var(--purple-light);
+}
+
+/* Username and email */
+.profile-username {
+    font-size: 24px;
+    margin-bottom: 4px;
+}
+
+.profile-email {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+/* User stats box */
+.profile-details {
+    text-align: left;
+    background: var(--bg-input);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+}
+
+.profile-detail-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.profile-detail-item:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+.detail-value {
+    color: var(--text-primary);
+    font-size: 13px;
+}
+
+/* Profile action buttons */
+.profile-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.profile-actions .btn-primary {
+    text-decoration: none;
+    padding: 10px 24px;
+}
+
+/* Username display in nav bar */
+.nav-username {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-right: 4px;
 }
